@@ -1,19 +1,34 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=65.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "lhguard"
-version = "0.1.0"
-description = "A zero-trust automated compilation guard targeting Lean 4 syntax hallucinations."
+version = "1.0.0"
+description = "Lean-Hallucination-Guard — Deterministic guardrails for Lean 4 against LLM syntactic & semantic mimicry."
 readme = "README.md"
-requires-python = ">=3.8"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: Other/Proprietary License",
-    "Operating System :: OS Independent",
+license = { file = "LICENSE.md" }
+authors = [
+    { name = "Borealis S. Hedling", email = "n/a" }
 ]
-dependencies = []
+requires-python = ">=3.10"
+
+dependencies = [
+    "numpy>=1.26",
+]
+
+# Optional but recommended for provenance auditing
+[project.urls]
+homepage = "https://github.com/Borealiscodes/Lean-Hallucination-Guard"
+repository = "https://github.com/Borealiscodes/Lean-Hallucination-Guard"
+documentation = "https://github.com/Borealiscodes/Lean-Hallucination-Guard"
+
+[tool.setuptools]
+packages = ["lhguard"]
+
+[tool.setuptools.package-data]
+lhguard = ["*.md"]
 
 [project.scripts]
-lhguard-check = "lhguard.cli:main"
+lhguard-validate = "lhguard.validator:validate"
+lhguard-watch = "lhguard.watcher:watch_markdown"
