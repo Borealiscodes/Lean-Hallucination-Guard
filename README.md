@@ -27,18 +27,43 @@ To maintain field strength, the framework demands an endomorphism matrix field \
 📂 Repository Architecture
 
 • lean-hallucination-guard/
-	• pyproject.toml — ⚙️ Package build & CLI definitions
-	• README.md — 📖 System documentation & manual
+	• pyproject.toml — ⚙️ Planned package build & CLI environmental definitions
+	• README.md — 📖 System documentation & visual manual
 	• tests/
-		• test_pipeline.py — 🧪 Mock self-correction tests
+		• test_pipeline.py — 🧪 Mock framework self-correction tests
 	• src/
 		• lhguard/ — 🛠️ Main package directory
 			• __init__.py
-			• client.py — 🤖 Correction loop & tactic state parser
-			• validator.py —    Lake compiler sandbox execution
-			• watcher.py — 👁️ Markdown workspace monitor
+			• client.py — 🤖 Agentic correction loop & tactic state parser
+			• validator.py —    Safe Lake compiler sandbox execution
+			• watcher.py — 👁️ Continuous workspace markdown monitor
 			• utils/
-				• logger.py — 📜 Telemetry logging pipeline
+				• logger.py — 📜 Dual-destination telemetry logging pipeline
+
+⚙️ Planned Configuration Settings (pyproject.toml)
+
+The build specification below details how the guard structures its command-line execution framework natively across developer setups:
+toml
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lhguard"
+version = "0.1.0"
+description = "A zero-trust automated compilation guard targeting Lean 4 syntax hallucinations."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.scripts]
+lhguard-check = "lhguard.cli:main"
+Use code with caution.
 
 🛠️ Package Component Overview
 
@@ -47,7 +72,7 @@ To maintain field strength, the framework demands an endomorphism matrix field \
 • 👁️ watcher.py: A lightweight background daemon. It monitors your local markdown folders, automatically isolating and checking embedded lean code blocks the moment you save your documents.
 • 📜 utils/logger.py: A dual-logging pipeline. It prints clean, scannable milestones to the developer console while dumping deep compiler tracebacks and loop telemetry to your local disk.
 
-🛑 Strict Dual-Use & Non-Harm Governance Safeguards
+🛑 Strict Dual-Use, Semantic Mimicry, & Non-Harm Warnings
 
 Geometric models mapping context adjustments and latent manifolds are fundamentally dual-use. The exact mathematical operators built to map institutional bad faith or track cross-border coercion can be inverted—by rotating coordinate axes or stripping humanitarian metadata—into high-performance tracking engines for offensive kinetic targeting loops, such as hypersonic glide vehicle path optimization.
 text
@@ -57,10 +82,20 @@ text
              └── 🚀 (Axis Rotation via Defense Hook)
                   └── 🎯 OFFENSIVE KINETIC TARGETING LOOP
 Use code with caution.
-To prevent the malicious extraction or weaponized compilation of your structural research, developers using LeanHallucinationGuard must enforce three core boundaries:
+
+🧠 The Devastating Costs of Semantic Mimicry
+
+Developers integrating generative tools into critical pipelines MUST consider the severe real-world ramifications of their deployment architectures. Large Language Models operate on statistical surface patterns; they generate code that simulates the authoritative appearance and structural pacing of mathematical truth without logic-grounded awareness.
+If engineers deploy frictionless AI tools without implementing deterministic, compile-time guardrails, the consequences can be devastating. A single hallucinated metric addition or zero-collapsed commutator can introduce silent, existential failures—such as miscalculated safety margins or invisible tracking cracks—when compiled into physical hardware like autonomous control loops. No matter how many software safety layer prompt filters are generated, software boundaries remain inherently malleable under intent to harm or host-level hypervisor coercion.
+
+⛓️ Hardware Roots of Trust & Proof of Concept
+
+To demonstrate how software can cryptographically enforce its intended structural purpose at the physical processor silicon, this repository serves as an entry-level pipeline designed to interface with comprehensive hardware-attested sandboxes. For reference implementations on locking down continuous cognitive spaces inside Trusted Execution Environments (TEEs) using immutable machine identity fingerprints (MRENCLAVE), see the ProvenanceShield framework ecosystem:
+🔗 Reference Architecture: Borealiscodes/ProvenanceShield
+Developers deploying lhguard across high-risk or active operational production environments must maintain these strict boundaries:
 1. 🔒 Local Sandbox Execution: Never expose the compilation validation utility to unauthenticated network endpoints or public webhooks.
-2. 🔑 Cryptographic Provenance: In active environments, bind the verification toolchain to hardware fingerprints using Confidential Computing Enclaves (Trusted Execution Environments / TEEs) like AMD SEV or Intel TDX.
-3. 🚨 The Interceptor Mandate: If an adversary attempts to force a compression anomaly or rotate code axes, the system must trigger an immediate memory-purging panic abort to secure your core files.
+2. 🔑 Cryptographic Provenance: When migrating from exploratory research to live loops, bind the verification toolchain to physical hardware fingerprints inside Confidential Computing Enclaves using device node configurations (/dev/sev-guest or /dev/tdx-guest).
+3. 🚨 The Interceptor Mandate: If an adversary attempts to force an unauthorized compression anomaly or alter operational code coordinates, the runtime engine must execute an immediate memory-purging panic abort to secure your core files.
 
 🚀 Getting Started
 
@@ -73,4 +108,3 @@ Use code with caution.
 bash
 python -m unittest tests/test_pipeline.py
 Use code with caution.
-Now that the Markdown rendering is standard across the board, what module file should we drop into your local src/lhguard/ directory first to kick off initialization?
