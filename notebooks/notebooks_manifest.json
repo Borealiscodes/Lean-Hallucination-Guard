@@ -1,0 +1,37 @@
+{
+  "\$schema": "https://schemastore.org",
+  "workspace_root": "notebooks",
+  "project_context": "LeanHallucinationGuard Demonstrations",
+  "demonstration_suite": [
+    {
+      "file_name": "01_semantic_mimicry_anatomy.ipynb",
+      "target_audience": "Core Theorem Proving Developers",
+      "objective": "Visually expose why LLMs hallucinate proofs by contrasting raw statistical text completion against deterministic compile-time checking.",
+      "interactive_components": [
+        "Simulated LLM completions rendering invalid tactics",
+        "Raw string comparison highlighting the syntax mimicry illusion",
+        "Direct integration with `lhguard.validator` sandbox environment"
+      ]
+    },
+    {
+      "file_name": "02_agentic_tactic_repair_loop.ipynb",
+      "target_audience": "AI Alignment & Tools Engineers",
+      "objective": "Demonstrate the step-by-step conversational repair loop mapping parsed compiler goal coordinates (⊢) back into the prompt context.",
+      "interactive_components": [
+        "Step-by-step execution tracer tracking agent retry milestones",
+        "Live printouts of extracted line/column coordinate tokens",
+        "Successful convergence timeline mapping to a clean Mathlib proof"
+      ]
+    },
+    {
+      "file_name": "03_manifold_provenance_boundaries.ipynb",
+      "target_audience": "Safety-Critical Systems & Interpretability Researchers",
+      "objective": "Model high-dimensional geometric invariants (the Three-Sphere framework) and demonstrate how the system handles the dual-use axis rotation crisis.",
+      "interactive_components": [
+        "Matrix modeling tracking topological manifold collapse via SVD values",
+        "Simulated adversarial prompt mapping an un-grounded academic skeleton",
+        "Triggering the self-terminating interceptor mandate and memory-purge routines"
+      ]
+    }
+  ]
+}
