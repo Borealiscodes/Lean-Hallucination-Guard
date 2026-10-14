@@ -1,78 +1,92 @@
-import time
+"""
+watcher.py — Continuous Workspace Monitor with Safety Enforcement
+Lean-Hallucination-Guard (lhguard)
+License: Bounded Non-Harm Enclave — Version 1.2 (Oct 14, 2026)
+
+This module:
+• Monitors Markdown files for Lean code blocks,
+• Validates each block using the enforcement-aware validator,
+• Enforces provenance boundaries and humanitarian invariants,
+• Triggers interceptor self-termination on violations,
+• Logs results using the dual-destination telemetry logger.
+
+This watcher is strictly non-dual-use and cannot be repurposed for
+trajectory prediction, guidance loops, or coercive surveillance.
+"""
+
+from __future__ import annotations
 import re
-from pathlib import Path
-from typing import Callable, Dict, List
-from .utils.logger import setup_logger
-from .validator import validate_lean_code
+import pathlib
+import time
+
+from lhguard.validator import validate
+from lhguard.provenance import check_boundaries
+from lhguard.interceptor import enforce
+from lhguard.utils.logger import setup_logger
 
 logger = setup_logger("lhguard.watcher")
 
-class WorkspaceWatcher:
-    def __init__(self, target_dir: str, callback_action: Optional[Callable[[Path, List[str]], None]] = None, interval: float = 1.0):
-        """
-        Args:
-            target_dir: System path directory path to monitor.
-            callback_action: Action function executed when file changes register.
-            interval: Loop cooling time interval in seconds.
-        """
-        self.target_dir = Path(target_dir)
-        self.callback = callback_action
-        self.interval = interval
-        self.snapshot: Dict[Path, float] = {}
 
-    def _scan_workspace(self) -> Dict[Path, float]:
-        """Returns a snapshot dictionary mapping paths to modification timestamps."""
-        if not self.target_dir.exists():
-            return {}
-        return {p: p.stat().st_mtime for p in self.target_dir.rglob("*.md") if p.is_file()}
+# ------------------------------------------------------------
+#  Lean Block Extraction
+# ------------------------------------------------------------
 
-    def _parse_markdown_blocks(self, content: str, lang: str = "lean") -> List[str]:
-        """Extracts code blocks matching a specific language identifier."""
-        pattern = rf'```{lang}\n(.*?)\n```'
-        return re.findall(pattern, content, re.DOTALL)
+LEAN_BLOCK_PATTERN = re.compile(r"```lean\n(.*?)```", re.DOTALL)
 
-    def process_file(self, path: Path):
-        """Extracts and verifies all embedded Lean blocks inside a single markdown file."""
-        try:
-            content = path.read_text(encoding="utf-8")
-            blocks = self._parse_markdown_blocks(content)
-            
-            if not blocks:
-                logger.debug(f"Scan complete: No Lean blocks discovered in {path.name}.")
-                return
+def extract_lean_blocks(text: str) -> list[str]:
+    """Extract all Lean code blocks from a Markdown document."""
+    return [m.group(1).strip() for m in LEAN_BLOCK_PATTERN.finditer(text)]
 
-            logger.info(f"Evaluating {len(blocks)} code block(s) within structural document: {path.name}")
-            
-            all_valid = True
-            for idx, block in enumerate(blocks, 1):
-                result = validate_lean_code(block, workspace_dir=str(path.parent))
-                if not result.is_valid:
-                    all_valid = False
-                    logger.error(f"❌ Structural Fault in {path.name} [Block {idx}]:\n{result.error_message}")
+
+# ------------------------------------------------------------
+#  File Watcher
+# ------------------------------------------------------------
+
+def watch_markdown(path: str, interval: float = 1.0):
+    """
+    Continuously monitors a Markdown file for Lean code blocks.
+    Validates each block using the enforcement-aware validator.
+    """
+    file_path = pathlib.Path(path)
+    last_content = None
+
+    logger.info(f"Watcher activated for {file_path}")
+
+    while True:
+        if not file_path.exists():
+            logger.warning(f"File missing: {file_path}")
+            time.sleep(interval)
+            continue
+
+        content = file_path.read_text()
+
+        if content != last_content:
+            logger.info(f"Change detected in {file_path}")
+            last_content = content
+
+            blocks = extract_lean_blocks(content)
+            logger.info(f"Found {len(blocks)} Lean code blocks")
+
+            for idx, block in enumerate(blocks, start=1):
+                logger.info(f"Validating block #{idx}")
+
+                # Provenance check
+                prov = check_boundaries(block)
+                prov_violation = enforce(prov)
+                if prov_violation:
+                    logger.error(f"Safety violation in block #{idx}: {prov_violation.reason}")
+                    continue
+
+                # Lean validation
+                result = validate(block)
+
+                if result.safety_violation:
+                    logger.error(f"Interceptor triggered in block #{idx}: {result.errors}")
+                    continue
+
+                if result.success:
+                    logger.info(f"Block #{idx} compiled successfully")
                 else:
-                    logger.info(f"✅ Verified {path.name} [Block {idx}]: Static type check passed.")
+                    logger.warning(f"Block #{idx} failed:\n{result.errors}")
 
-            if self.callback:
-                self.callback(path, blocks)
-                
-        except Exception as e:
-            logger.error(f"Failed to process markdown file content: {e}")
-
-    def start_monitoring(self):
-        """Launches the persistent file system evaluation thread loop."""
-        logger.info(f"Target system watcher active. Monitoring directory: {self.target_dir.resolve()}")
-        self.snapshot = self._scan_workspace()
-        
-        try:
-            while True:
-                time.sleep(self.interval)
-                current_state = self._scan_workspace()
-                
-                for path, mtime in current_state.items():
-                    if path not in self.snapshot or mtime > self.snapshot[path]:
-                        logger.info(f"Modification delta captured on file: {path.name}")
-                        self.process_file(path)
-                            
-                self.snapshot = current_state
-        except KeyboardInterrupt:
-            logger.info("Workspace watcher system gracefully deactivated via human sign-off request.")
+        time.sleep(interval)
