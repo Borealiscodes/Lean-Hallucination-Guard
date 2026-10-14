@@ -1,0 +1,86 @@
+{
+  "\$schema": "https://schemastore.org",
+  "project_name": "LeanHallucinationGuard",
+  "short_name": "lhguard",
+  "version": "1.0.0-alpha",
+  "status": "in_progress",
+  "repository_base": "lean-hallucination-guard",
+  "architecture_milestones": [
+    {
+      "phase": "01_ENVIRONMENT_BASELINE",
+      "description": "Establish package structural manifest and environmental configuration limits.",
+      "artifacts": [
+        {
+          "file_path": "pyproject.toml",
+          "purpose": "Define the zero-dependency build engine and map the `lhguard-check` CLI terminal entry point.",
+          "status": "planned"
+        }
+      ]
+    },
+    {
+      "phase": "02_TELEMETRY_FOUNDATION",
+      "description": "Implement structural system tracking to isolate compilation logs from narrative text changes.",
+      "artifacts": [
+        {
+          "file_path": "src/lhguard/utils/__init__.py",
+          "purpose": "Expose internal utility modules safely across package scopes.",
+          "status": "planned"
+        },
+        {
+          "file_path": "src/lhguard/utils/logger.py",
+          "purpose": "Construct the dual-destination pipeline printing to stdout while recording deep compiler tracebacks to disk.",
+          "status": "planned"
+        }
+      ]
+    },
+    {
+      "phase": "03_DEDUCTIVE_COMPILER_SANDBOX",
+      "description": "Build the zero-trust execution sandbox that forces deterministic axiomatic validation.",
+      "artifacts": [
+        {
+          "file_path": "src/lhguard/__init__.py",
+          "purpose": "Initialize the primary library layer namespace properties.",
+          "status": "planned"
+        },
+        {
+          "file_path": "src/lhguard/validator.py",
+          "purpose": "Manage isolation scratchpads, invoke `lake env lean`, and govern execution timeout constraints.",
+          "status": "planned"
+        }
+      ]
+    },
+    {
+      "phase": "04_AGENTIC_FEEDBACK_LOOP",
+      "description": "Wire the LLM interactive context feedback engine using strict tactic-state injection boundaries.",
+      "artifacts": [
+        {
+          "file_path": "src/lhguard/client.py",
+          "purpose": "Parse compiler diagnostics for the `⊢` goal target coordinates and drive the self-correction logic loops.",
+          "status": "planned"
+        }
+      ]
+    },
+    {
+      "phase": "05_WORKSPACE_CONTINUITY",
+      "description": "Automate local file evaluation workflows to seamlessly secure research notes.",
+      "artifacts": [
+        {
+          "file_path": "src/lhguard/watcher.py",
+          "purpose": "Establish a low-overhead file system monitor to parse and compile embedded markdown blocks on save.",
+          "status": "planned"
+        }
+      ]
+    },
+    {
+      "phase": "06_STABILITY_ATTESTATION",
+      "description": "Deploy environmental testing constraints to prove loop convergence without burning live API tokens.",
+      "artifacts": [
+        {
+          "file_path": "tests/test_pipeline.py",
+          "purpose": "Execute mock pipeline tracking loops simulating complete syntax error self-correction trajectories.",
+          "status": "planned"
+        }
+      ]
+    }
+  ]
+}
