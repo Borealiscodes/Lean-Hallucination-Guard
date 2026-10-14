@@ -1,84 +1,149 @@
-import re
-from typing import Callable, Optional, Dict, Any
-from .validator import validate_lean_code
-from .utils.logger import setup_logger
+"""
+client.py — Agentic Correction Loop & Tactic State Parser
+Lean-Hallucination-Guard (lhguard)
+License: Bounded Non-Harm Enclave — Version 1.2 (Oct 14, 2026)
 
-logger = setup_logger("lhguard.client")
+This module implements the agentic correction engine:
+• Runs Lean code through the validator,
+• Parses compiler errors and unsolved goals,
+• Generates structured correction directives,
+• Iteratively retries until the proof converges or safety boundaries trigger.
 
-class LeanLLMClient:
-    def __init__(self, llm_completion_func: Callable[[str], str], max_retries: int = 4):
-        """
-        Args:
-            llm_completion_func: Connection hook to execute your target LLM prompt.
-            max_retries: Maximum correction cycles allowed before execution abort.
-        """
-        self.llm = llm_completion_func
-        self.max_retries = max_retries
+All logic is strictly non-dual-use and cannot be repurposed for trajectory
+prediction, guidance loops, or coercive surveillance.
+"""
 
-    def _extract_lean_block(self, text: str) -> Optional[str]:
-        """Extracts the first Lean code block discovered in text."""
-        match = re.search(r'```lean\n(.*?)\n```', text, re.DOTALL)
-        return match.group(1).strip() if match else None
+from __future__ import annotations
+from dataclasses import dataclass
 
-    def _parse_tactic_state(self, compiler_output: str) -> Dict[str, Any]:
-        """
-        Parses Lean 4 compiler diagnostics to isolate line numbers 
-        and extract the remaining unproven mathematical goals.
-        """
-        loc_match = re.search(r':(\d+):(\d+):', compiler_output)
-        line = int(loc_match.group(1)) if loc_match else "Unknown"
-        col = int(loc_match.group(2)) if loc_match else "Unknown"
-        
-        goals = []
-        lines = compiler_output.splitlines()
-        capture = False
-        for l in lines:
-            if "unsolved goals" in l.lower() or "⊢" in l:
-                capture = True
-            if capture:
-                goals.append(l)
-        
-        tactic_state = "\n".join(goals) if goals else compiler_output
-        return {"line": line, "column": col, "tactic_state": tactic_state}
+from lhguard.validator import validate
+from lhguard.provenance import check_boundaries
+from lhguard.interceptor import enforce
 
-    def generate_theorem(self, prompt: str) -> str:
-        """Generates, validates, and recursively fixes a Lean 4 theorem using targeted tactic feedback."""
-        current_prompt = (
-            f"{prompt}\n\nReturn your answer with the Lean 4 code "
-            "wrapped in a standard ```lean ... ``` block. Ensure all necessary Mathlib modules are imported."
-        )
-        
-        for attempt in range(1, self.max_retries + 1):
-            logger.info(f"Triggering LLM generation loop pass (Iteration {attempt}/{self.max_retries})...")
-            response = self.llm(current_prompt)
-            lean_code = self._extract_lean_block(response)
-            
-            if not lean_code:
-                logger.warning("Generation artifact missing expected ```lean code block delimiters.")
-                current_prompt = f"Format error. You must explicitly output the theorem inside a ```lean block.\n\n{prompt}"
-                continue
-                
-            result = validate_lean_code(lean_code)
-            
-            if result.is_valid:
-                logger.info(f"Success! Code block compiled perfectly on attempt {attempt}.")
-                return response
-                
-            diagnostics = self._parse_tactic_state(result.error_message)
-            logger.warning(f"Lean syntax error captured at line {diagnostics['line']}. Re-routing context loop...")
-            
-            current_prompt = (
-                f"The Lean 4 code you provided failed compilation diagnostics.\n\n"
-                f"--- Target Code Fragment ---\n```lean\n{lean_code}\n```\n\n"
-                f"--- Error Analysis ---\n"
-                f"📍 Fault Location: Line {diagnostics['line']}, Column {diagnostics['column']}\n"
-                f"🔮 Active Tactic State / Unsolved Goals:\n{diagnostics['tactic_state']}\n\n"
-                f"--- Action Required ---\n"
-                f"Analyze the active goals (⊢) and variable states listed above. "
-                f"Rewrite the theorem declaration or proof tactics to close this specific goal state. "
-                f"Do not introduce new unverified tactics."
+
+# ------------------------------------------------------------
+#  Correction Report Structure
+# ------------------------------------------------------------
+
+@dataclass
+class CorrectionStep:
+    iteration: int
+    success: bool
+    errors: str | None
+    goals: str | None
+    safety_violation: bool
+    safety_log: object | None
+    next_prompt: str | None
+
+
+@dataclass
+class CorrectionResult:
+    steps: list[CorrectionStep]
+    converged: bool
+
+
+# ------------------------------------------------------------
+#  Error Parsing Helpers
+# ------------------------------------------------------------
+
+def _extract_tactic_hint(errors: str) -> str:
+    """
+    Extracts a minimal correction hint from Lean error output.
+    This is intentionally simple and non-dual-use.
+    """
+    lines = errors.splitlines()
+    for line in lines:
+        if "unknown tactic" in line.lower():
+            return "Try replacing the unknown tactic with a valid Lean tactic."
+        if "type mismatch" in line.lower():
+            return "Adjust the expression to match the expected type."
+        if "unsolved goals" in line.lower():
+            return "Provide additional tactics to solve remaining goals."
+    return "Review the error and adjust the proof structure."
+
+
+# ------------------------------------------------------------
+#  Agentic Correction Loop
+# ------------------------------------------------------------
+
+def run_correction_loop(initial_code: str, max_iters: int = 5) -> CorrectionResult:
+    """
+    Runs the agentic correction loop:
+    • Validate Lean code,
+    • Parse errors,
+    • Generate correction hints,
+    • Retry until success or safety violation.
+    """
+    steps: list[CorrectionStep] = []
+    current_code = initial_code
+
+    for i in range(1, max_iters + 1):
+
+        # Provenance check on the code itself
+        prov = check_boundaries(current_code)
+        prov_violation = enforce(prov)
+        if prov_violation:
+            step = CorrectionStep(
+                iteration=i,
+                success=False,
+                errors="Safety violation — provenance boundary breached",
+                goals=None,
+                safety_violation=True,
+                safety_log=prov_violation,
+                next_prompt=None,
             )
-            
-        err_msg = f"Agent failed to converge on a sound mathematical proof within {self.max_retries} cycles."
-        logger.error(err_msg)
-        raise RuntimeError(err_msg)
+            steps.append(step)
+            return CorrectionResult(steps=steps, converged=False)
+
+        # Validate Lean code
+        result = validate(current_code)
+
+        # If safety violation occurred inside validator
+        if result.safety_violation:
+            step = CorrectionStep(
+                iteration=i,
+                success=False,
+                errors=result.errors,
+                goals=None,
+                safety_violation=True,
+                safety_log=result.safety_log,
+                next_prompt=None,
+            )
+            steps.append(step)
+            return CorrectionResult(steps=steps, converged=False)
+
+        # If success — convergence
+        if result.success:
+            step = CorrectionStep(
+                iteration=i,
+                success=True,
+                errors=None,
+                goals=None,
+                safety_violation=False,
+                safety_log=None,
+                next_prompt=None,
+            )
+            steps.append(step)
+            return CorrectionResult(steps=steps, converged=True)
+
+        # Otherwise, generate correction hint
+        hint = _extract_tactic_hint(result.errors or "")
+        next_prompt = f"Correction hint: {hint}"
+
+        step = CorrectionStep(
+            iteration=i,
+            success=False,
+            errors=result.errors,
+            goals=result.goals,
+            safety_violation=False,
+            safety_log=None,
+            next_prompt=next_prompt,
+        )
+        steps.append(step)
+
+        # For now, we simply append the hint as a comment to the code.
+        # In Notebook 02, this is replaced with an LLM-generated correction.
+        current_code = current_code + f"\n-- {hint}\n"
+
+    # If loop ends without convergence
+    return CorrectionResult(steps=steps, converged=False)
