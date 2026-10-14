@@ -92,34 +92,47 @@ documented: syntax and semantics exhibit weak observable correspondence.
 
 ---
 
-🌱 Simple Accessibility Example
+🌱 Simple Structural Example
 
-A gentle illustration of syntactic vs semantic mimicry
+A clear, non‑patronizing illustration of mimicry
 
-Imagine a student who has memorized the shape of a math proof but doesn’t
-understand the math.
+Consider a recipe.
 
 🧩 Syntactic mimicry example
-They write:
+A person writes:
 
-> “We apply the lemma, rewrite the goal, and close the proof.”
+> “Add ingredient, stir, heat, serve.”
 
-It looks like a proof, but nothing actually happens.
+It looks like a recipe, but it lacks:
+
+- quantities  
+- temperatures  
+- timing  
+- actual operations  
+
+It is structurally correct but semantically empty.
+
+This mirrors LLMs producing Lean code that looks like a proof but performs no
+meaningful transformations.
 
 🧭 Semantic mimicry example
-They say:
+A person writes:
 
-> “Since the function is continuous, the derivative is zero.”
+> “Since the soup is hot, add sugar to thicken it.”
 
-This sounds like reasoning, but it’s false — continuity does not imply zero
-derivative.
+This sounds like reasoning, but the logic is wrong — heat does not imply sugar
+thickens anything.
+
+This mirrors LLMs producing Lean code that sounds mathematically justified but
+violates Lean’s actual semantics.
 
 🛡️ Why lhguard matters
-LLMs do the same thing: they produce Lean code that looks correct but does not
-perform the semantic operations Lean requires.
+Lean‑Hallucination‑Guard detects both:
 
-Lean‑Hallucination‑Guard detects this mismatch and stops unsafe or meaningless
-proofs before they reach the Lean kernel.
+- syntactic mimicry → structure without meaning  
+- semantic mimicry → reasoning without correctness  
+
+and stops unsafe or meaningless proofs before they reach the Lean kernel.
 
 ---
 
